@@ -34,9 +34,10 @@ namespace TagCreatorVNode
             InitializeComponent();
             SetCombo();
             SetDefault();
+            RWClass = new ReadWrite();
         }
 
-        private void openBtn_Click(object sender, RoutedEventArgs e)
+        private void OpenBtn_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog()
             {
@@ -46,12 +47,15 @@ namespace TagCreatorVNode
             if (ofd.ShowDialog() == true)
             {
                 if (ofd.FileName.Contains(".txt"))
-                    RWClass = new ReadWrite(ofd.FileName);
+                    RWClass.SetPath(ofd.FileName);
                 else
                     MessageBox.Show("Error. Wrong file");
             }
             tagList = RWClass.tagList;
-            counterLbl.Content = string.Format("Num of tags: {0}", RWClass.ammount);     
+            counterLbl.Content = string.Format("Num of tags: {0}", RWClass.ammount);
+
+            addBtn.IsEnabled = true;
+            createBtn.IsEnabled = true;
         }
 
         private void SetCombo()
@@ -87,6 +91,8 @@ namespace TagCreatorVNode
 
         private void SetDefault()
         {
+            string defaultpath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            outputLbl.Content = string.Format("{0}\\{1}.csv",defaultpath, "Tagfile");
             groupNameText.Text = "wago";
             TagNameText.Text = "";
             typeCombo.SelectedIndex = 0;
@@ -168,14 +174,13 @@ namespace TagCreatorVNode
                     QueueSizeText.Text, HistoryEnabledCombo.SelectedItem.ToString(), HistorymoduleText.Text);
         }
 
-        private void defaultBtn_Click(object sender, RoutedEventArgs e) => SetDefault();
+        private void DefaultBtn_Click(object sender, RoutedEventArgs e) => SetDefault();
 
-        private void addBtn_Click(object sender, RoutedEventArgs e)
+        private void AddBtn_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                RWClass.AddTag(AddOneItem());
-                MessageBox.Show("One tag has been added");
+                RWClass.AddTag(AddOneItem(), outputLbl.Content.ToString());
             }
             catch (Exception ex)
             {
@@ -183,12 +188,12 @@ namespace TagCreatorVNode
             }
         }
 
-        private void createBtn_Click(object sender, RoutedEventArgs e)
+        private void CreateBtn_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 MergeStrings(tagList);
-                RWClass.WriteCSV(tagList);
+                RWClass.WriteCSV(tagList, outputLbl.Content.ToString());
                 MessageBox.Show("CSV file has been created from tag file");
             }
             catch (Exception ex)
@@ -196,5 +201,18 @@ namespace TagCreatorVNode
                 MessageBox.Show("Err. Did you load tag file?\n" + ex.ToString());
             }
         }
+
+        private void BrowseOutput()
+        {
+            SaveFileDialog sfd = new SaveFileDialog
+            {
+                Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*",
+                Title = "Change csv file location"
+            };
+            sfd.ShowDialog();
+            outputLbl.Content = sfd.FileName;
+        }
+
+        private void BrowseBtn_Click(object sender, RoutedEventArgs e) => BrowseOutput();
     }
 }

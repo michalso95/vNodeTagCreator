@@ -11,14 +11,17 @@ namespace TagCreatorVNode
     class ReadWrite
     {
 
-        string pathstr, namestr;
+        string pathstr;
         public int ammount;
         public List<string> tagList = new List<string>();
 
-        public ReadWrite(string name)
+        public ReadWrite()
         {
-            pathstr = name;
-            namestr = pathstr.Substring(0, (pathstr.IndexOf(".")));
+        }
+
+        public void SetPath(string path)
+        {
+            this.pathstr = path;
             Read(pathstr);
         }
 
@@ -34,7 +37,7 @@ namespace TagCreatorVNode
                 sb.AppendLine(s);
                 try
                 {
-                    s.Replace(".", "-");
+                    //s.Replace(".", "-");
                     tagList.Add(s);
                     ammount++;
                 }
@@ -48,26 +51,31 @@ namespace TagCreatorVNode
             sr.Close();
         }
 
-        public void WriteCSV(List<string> lista)
+        public void WriteCSV(List<string> lista, string filename)
         {
             string[] text1;
-            string outPath = string.Format("{0}CSV.csv", namestr);
             text1 = lista.ToArray();
             text1 = text1.Take(text1.Count() - 1).ToArray();
-            System.IO.File.WriteAllLines(outPath, text1);
+            System.IO.File.WriteAllLines(filename, text1);
         }
 
-        public void AddTag(string item)
+        public void AddTag(string item, string filename)
         {
-            string pathAdd = string.Format("{0}CSV.csv", namestr);
-            if (!System.IO.File.Exists(pathAdd))
+            if (!System.IO.File.Exists(filename))
             {
-                MessageBox.Show("File doesn't exist");
-                return;
+                MessageBoxResult messageBoxResult = System.Windows.MessageBox.Show("File doesn't exist. \n Do you want to create that file?", "File not found", System.Windows.MessageBoxButton.YesNo);
+                if (messageBoxResult == MessageBoxResult.No)
+                    return;
+                else
+                {
+                    System.IO.File.AppendAllText(filename, item);
+                    MessageBox.Show("One tag has been added");
+                }
             }
             else
             {
-                System.IO.File.AppendAllText(pathAdd, item);
+                System.IO.File.AppendAllText(filename, item);
+                MessageBox.Show("One tag has been added");
             }
         }
     }
